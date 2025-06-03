@@ -1,0 +1,26 @@
+# Node.js dependencies
+node_modules/
+**/node_modules/
+
+# compiled output
+dist/
+build/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+
+# Coverage and debug
+coverage/
+.nyc_output/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Environment variables
+.env*
