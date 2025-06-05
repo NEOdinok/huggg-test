@@ -1,28 +1,31 @@
 import { InMemoryRepository } from "../repositories/inMemoryRepository";
-import { Store, Product } from "../types";
+import { Store, Product } from "../data";
 
 export class ProductService {
   constructor(private repo: InMemoryRepository) {}
 
   /**
-   * Returns all Store objects for a given productId (or [] if not found).
+   * Returns all Stores for a given productId (or [] if not found).
+   *
+   * Plain english:
+   *
+   * Take product X,
+   * look up every brand that offers it (native or consolidated),
+   * gather all of those brands’ stores,
+   * hand back all of those store records.
    */
+
   async getStoresForProduct(productId: string): Promise<Store[]> {
-    const product: Product | null = await this.repo.findProductById(productId);
-    if (!product) {
-      return [];
+    // Find which store‐IDs serve this product:
+    const storeIds = await this.repo.getStoreIdsByProduct(productId);
+    if (storeIds.length === 0) return [];
+
+    // Map each storeId → Store object
+    const out: Store[] = [];
+    for (const storeId of storeIds) {
+      const store = await this.repo.findStoreById(storeId);
+      if (store) out.push(store);
     }
-
-    const storeIds: string[] = await this.repo.getStoreIdsByProduct(productId);
-
-    const result: Store[] = [];
-    for (const sid of storeIds) {
-      const s = await this.repo.findStoreById(sid);
-      if (s) {
-        result.push(s);
-      }
-    }
-
-    return result;
+    return out;
   }
 }

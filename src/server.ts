@@ -1,6 +1,8 @@
+// src/server.ts
 import Fastify from "fastify";
 
-import { brands, products, stores, productStores } from "./data";
+// ⬇️ These come from data.ts:
+import { brands, products, stores, productToStoreIds } from "./data";
 
 import { InMemoryRepository } from "./repositories/inMemoryRepository";
 import { BrandService } from "./services/brandService";
@@ -9,9 +11,15 @@ import { registerBrandRoutes } from "./routes/brandRoutes";
 import { registerProductRoutes } from "./routes/productRoutes";
 
 export async function buildServer() {
-  const fastify = Fastify();
+  const fastify = Fastify({ logger: true });
 
-  const repo = new InMemoryRepository(brands, products, stores, productStores);
+  // Pass the validated, in‐memory arrays/maps to your repository:
+  const repo = new InMemoryRepository(
+    brands,
+    products,
+    stores,
+    productToStoreIds
+  );
 
   const brandService = new BrandService(repo);
   registerBrandRoutes(fastify, brandService);
@@ -26,6 +34,6 @@ if (require.main === module) {
   (async () => {
     const app = await buildServer();
     await app.listen({ port: 3000 });
-    console.log("Server listening on http://localhost:3000");
+    console.log(" 👀👂 on http://localhost:3000");
   })();
 }

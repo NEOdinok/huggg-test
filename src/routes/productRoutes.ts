@@ -1,6 +1,10 @@
 import { FastifyInstance } from "fastify";
 import { ProductService } from "../services/productService";
 
+/**
+ * Hey, tell me where I can redeem a particular product.
+ * (Every store that has it)’
+ */
 export function registerProductRoutes(
   fastify: FastifyInstance,
   productService: ProductService
