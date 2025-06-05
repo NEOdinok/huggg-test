@@ -13,11 +13,11 @@ export function registerBrandRoutes(
     async (request, reply) => {
       const { brandId } = request.params;
       const products = await brandService.getProductsForBrand(brandId);
-      if (products.length === 0) {
-        return reply
-          .status(404)
-          .send({ message: "Brand not found or no products." });
+
+      if (products === null) {
+        return reply.status(404).send({ message: "Brand not found." });
       }
+
       return reply.status(200).send(products);
     }
   );

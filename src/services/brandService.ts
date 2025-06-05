@@ -8,41 +8,19 @@ export class BrandService {
    * Returns all Product objects (own + consolidated) for a given brandId.
    * If the brand does not exist, return an empty array.
    */
-
-  // old one
-  // async getProductsForBrand(brandId: string): Promise<Product[]> {
-  //   const brand: Brand | null = await this.repo.findBrandById(brandId);
-
-  //   if (!brand) {
-  //     return [];
-  //   }
-
-  //   const allIds = [...brand.products, ...brand.consolidated_products];
-  //   const result: Product[] = [];
-
-  //   for (const pid of allIds) {
-  //     const p = await this.repo.findProductById(pid);
-  //     if (p) {
-  //       result.push(p);
-  //     }
-  //   }
-
-  //   return result;
-  // }
-
-  async getProductsForBrand(brandId: string): Promise<Product[]> {
+  async getProductsForBrand(brandId: string): Promise<Product[] | null> {
     const brand = await this.repo.findBrandById(brandId);
-    if (!brand) return [];
 
-    // Combine “own” products + any consolidated products:
-    const allProductIds = [...brand.products, ...brand.consolidated_products];
+    if (!brand) return null; // brand not found
 
-    // Look up each product object by ID:
-    const results: Product[] = [];
-    for (const productId of allProductIds) {
+    const allIds = [...brand.products, ...brand.consolidated_products];
+    const products: Product[] = [];
+
+    for (const productId of allIds) {
       const product = await this.repo.findProductById(productId);
-      if (product) results.push(product);
+      if (product) products.push(product);
     }
-    return results;
+
+    return products;
   }
 }
