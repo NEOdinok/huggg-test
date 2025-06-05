@@ -1,7 +1,5 @@
-// src/server.ts
 import Fastify from "fastify";
 
-// ⬇️ These come from data.ts:
 import { brands, products, stores, productToStoreIds } from "./data";
 
 import { InMemoryRepository } from "./repositories/inMemoryRepository";
