@@ -121,4 +121,17 @@ describe("GET /brands/:brandId/products", () => {
       lastPage: 1,
     });
   });
+
+  it("treats invalid page/per_page as 1", async () => {
+    const res = await fastify.inject({
+      method: "GET",
+      url: "/brands/brand-A/products?per_page=-5&page=abc",
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.payload);
+    expect(body.meta.page).toBe(1);
+    expect(body.meta.itemsPerPage).toBe(1);
+    expect(Array.isArray(body.data)).toBe(true); // data would contain at least the first item
+  });
 });
