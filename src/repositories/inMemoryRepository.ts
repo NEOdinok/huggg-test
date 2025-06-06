@@ -1,9 +1,9 @@
-import { Brand, Product, Store } from "@/data";
+import { Brand, Product, Store } from "../data";
 
 export class InMemoryRepository {
-  private brands: Brand[];
-  private products: Product[];
-  private stores: Store[];
+  private brandMap: Map<string, Brand>;
+  private productMap: Map<string, Product>;
+  private storeMap: Map<string, Store>;
   private productStores: Record<string, string[]>;
 
   constructor(
@@ -12,26 +12,23 @@ export class InMemoryRepository {
     stores: Store[],
     productStores: Record<string, string[]>
   ) {
-    this.brands = brands;
-    this.products = products;
-    this.stores = stores;
+    // Build maps once at startup
+    this.brandMap = new Map(brands.map((b) => [b.id, b]));
+    this.productMap = new Map(products.map((p) => [p.id, p]));
+    this.storeMap = new Map(stores.map((s) => [s.id, s]));
     this.productStores = productStores;
   }
 
   async findBrandById(id: string): Promise<Brand | null> {
-    const foundBrand = this.brands.find((brand) => brand.id === id);
-
-    return foundBrand ?? null;
+    return this.brandMap.get(id) ?? null;
   }
 
   async findProductById(id: string): Promise<Product | null> {
-    const foundProduct = this.products.find((product) => product.id === id);
-    return foundProduct ?? null;
+    return this.productMap.get(id) ?? null;
   }
 
   async findStoreById(id: string): Promise<Store | null> {
-    const s = this.stores.find((s) => s.id === id);
-    return s ?? null;
+    return this.storeMap.get(id) ?? null;
   }
 
   async getStoreIdsByProduct(productId: string): Promise<string[]> {
