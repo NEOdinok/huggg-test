@@ -4,10 +4,6 @@ import { InMemoryRepository } from "@/repositories/inMemoryRepository";
 export class BrandService {
   constructor(private repo: InMemoryRepository) {}
 
-  /**
-   * Returns all Product objects (own + consolidated) for a given brandId.
-   * If the brand does not exist, return an empty array.
-   */
   async getProductsForBrand(brandId: string): Promise<Product[] | null> {
     const brand = await this.repo.findBrandById(brandId);
 

@@ -4,17 +4,6 @@ import { Store, Product } from "@/data";
 export class ProductService {
   constructor(private repo: InMemoryRepository) {}
 
-  /**
-   * Returns all Stores for a given productId (or [] if not found).
-   *
-   * Plain english:
-   *
-   * Take product X,
-   * look up every brand that offers it (native or consolidated),
-   * gather all of those brands’ stores,
-   * hand back all of those store records.
-   */
-
   async getStoresForProduct(productId: string): Promise<Store[] | null> {
     const product = await this.repo.findProductById(productId);
     if (!product) return null;

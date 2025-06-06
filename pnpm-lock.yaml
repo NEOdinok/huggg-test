@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@fastify/type-provider-typebox':
-        specifier: ^5.1.0
-        version: 5.1.0(@sinclair/typebox@0.28.20)
       '@sinclair/typebox':
         specifier: ^0.28.0
         version: 0.28.20
@@ -18,6 +15,9 @@ importers:
         specifier: ^4.24.0
         version: 4.29.1
     devDependencies:
+      '@fastify/type-provider-typebox':
+        specifier: ^5.1.0
+        version: 5.1.0(@sinclair/typebox@0.28.20)
       '@jest/globals':
         specifier: 30.0.0-beta.3
         version: 30.0.0-beta.3
