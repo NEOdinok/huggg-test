@@ -1,44 +1,124 @@
-import { beforeAll, afterAll, describe, it, expect } from "@jest/globals";
-import type { FastifyInstance } from "fastify";
-import { buildServer } from "../src/server";
+import Fastify from "fastify";
+import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 
-let app: FastifyInstance;
+import { registerBrandRoutes } from "../src/routes/brandRoutes";
+import { InMemoryRepository } from "../src/repositories/inMemoryRepository";
+import { BrandService } from "../src/services/brandService";
 
-beforeAll(async () => {
-  app = await buildServer();
-  await app.ready();
-});
+const mockBrands = [
+  {
+    id: "brand-A",
+    name: "Brand A",
+    products: ["prod-1"],
+    consolidated_products: ["prod-3"],
+    stores: [],
+  },
+  {
+    id: "brand-B",
+    name: "Brand B",
+    products: ["prod-3", "prod-4"],
+    consolidated_products: [],
+    stores: [],
+  },
+  {
+    id: "brand-C",
+    name: "Brand C (no products)",
+    products: [],
+    consolidated_products: [],
+    stores: [],
+  },
+] as const;
 
-afterAll(async () => {
-  await app.close();
-});
+const mockProducts = [
+  {
+    id: "prod-1",
+    label: "Product 1",
+    brand_id: "brand-A",
+  },
+  {
+    id: "prod-3",
+    label: "Product 3 (shared)",
+    brand_id: "brand-B", // consolidated into A but its home brand is B
+  },
+  {
+    id: "prod-4",
+    label: "Product 4",
+    brand_id: "brand-B",
+  },
+] as const;
+
+const mockStores: any[] = [];
+const mockProductStores: Record<string, string[]> = {};
 
 describe("GET /brands/:brandId/products", () => {
-  it("returns 200 & list of products (own + consolidated) for an existing brand", async () => {
-    const res = await app.inject({
-      method: "GET",
-      url: "/brands/brand-1/products",
-    });
+  let fastify: ReturnType<typeof Fastify>;
 
-    expect(res.statusCode).toBe(200);
-    const body = JSON.parse(res.payload) as Array<{ id: string; name: string }>;
-    expect(Array.isArray(body)).toBe(true);
-    expect(body).toEqual([
-      { id: "product-1", name: "Product One" },
-      { id: "product-2", name: "Product Two" },
-    ]);
+  beforeEach(async () => {
+    fastify = Fastify();
+
+    const repo = new InMemoryRepository(
+      // Cast to mutable because InMemoryRepository mutates nothing but expects arrays
+      [...mockBrands] as any,
+      [...mockProducts] as any,
+      [...mockStores] as any,
+      { ...mockProductStores }
+    );
+
+    const brandService = new BrandService(repo);
+    registerBrandRoutes(fastify, brandService);
+
+    await fastify.ready();
   });
 
-  it("returns 404 & error message if brand does not exist (or has no products)", async () => {
-    const res = await app.inject({
+  afterEach(async () => {
+    await fastify.close();
+  });
+
+  it("returns 200 & paginated list of products (own + consolidated) for an existing brand", async () => {
+    const response = await fastify.inject({
       method: "GET",
-      url: "/brands/nonexistent/products",
+      url: "/brands/brand-A/products?page=1&per_page=10",
     });
 
-    expect(res.statusCode).toBe(404);
-    const body = JSON.parse(res.payload);
-    expect(body).toEqual({
-      message: "Brand not found or no products.",
+    expect(response.statusCode).toBe(200);
+    const body = response.json();
+    expect(body.data.map((p: any) => p.id).sort()).toEqual([
+      "prod-1",
+      "prod-3",
+    ]);
+    expect(body.meta).toMatchObject({
+      totalItems: 2,
+      itemsPerPage: 10,
+      page: 1,
+      lastPage: 1,
+    });
+  });
+
+  it("returns 404 & error message if brand does not exist", async () => {
+    const response = await fastify.inject({
+      method: "GET",
+      url: "/brands/not-a-real-id/products",
+    });
+
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toEqual({ message: "Brand not found." });
+  });
+
+  it("returns 200 & empty data if brand exists but has no products", async () => {
+    const response = await fastify.inject({
+      method: "GET",
+      url: "/brands/brand-C/products?page=1&per_page=5",
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const body = response.json();
+    expect(body.data).toEqual([]);
+    expect(body.meta).toMatchObject({
+      totalItems: 0,
+      itemsPerPage: 5,
+      page: 1,
+      lastPage: 1,
     });
   });
 });
