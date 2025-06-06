@@ -15,17 +15,16 @@ export class ProductService {
    * hand back all of those store records.
    */
 
-  async getStoresForProduct(productId: string): Promise<Store[]> {
-    // Find which store‐IDs serve this product:
-    const storeIds = await this.repo.getStoreIdsByProduct(productId);
-    if (storeIds.length === 0) return [];
+  async getStoresForProduct(productId: string): Promise<Store[] | null> {
+    const product = await this.repo.findProductById(productId);
+    if (!product) return null;
 
-    // Map each storeId → Store object
-    const out: Store[] = [];
+    const storeIds = await this.repo.getStoreIdsByProduct(productId);
+    const stores: Store[] = [];
     for (const storeId of storeIds) {
       const store = await this.repo.findStoreById(storeId);
-      if (store) out.push(store);
+      if (store) stores.push(store);
     }
-    return out;
+    return stores;
   }
 }
