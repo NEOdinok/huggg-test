@@ -1,9 +1,9 @@
 import Fastify from "fastify";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
-import { registerBrandRoutes } from "../routes/brandRoutes";
-import { InMemoryRepository } from "../repositories/inMemoryRepository";
-import { BrandService } from "../services/brandService";
+import { registerBrandRoutes } from "../src/routes/brandRoutes";
+import { InMemoryRepository } from "../src/repositories/inMemoryRepository";
+import { BrandService } from "../src/services/brandService";
 
 const mockBrands = [
   {

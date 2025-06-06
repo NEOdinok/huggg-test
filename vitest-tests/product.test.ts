@@ -1,9 +1,9 @@
 import Fastify from "fastify";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
-import { registerProductRoutes } from "../routes/productRoutes";
-import { InMemoryRepository } from "../repositories/inMemoryRepository";
-import { ProductService } from "../services/productService";
+import { registerProductRoutes } from "../src/routes/productRoutes";
+import { InMemoryRepository } from "../src/repositories/inMemoryRepository";
+import { ProductService } from "../src/services/productService";
 
 const mockBrands: any[] = []; // ProductService does not consult “brands” directly
 
