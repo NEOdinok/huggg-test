@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { ProductService } from "../services/productService";
+import { ProductService } from "@/services/productService";
 
 import {
   parsePageQueryString,

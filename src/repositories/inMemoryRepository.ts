@@ -1,4 +1,4 @@
-import { Brand, Product, Store } from "../data";
+import { Brand, Product, Store } from "@/data";
 
 export class InMemoryRepository {
   private brands: Brand[];

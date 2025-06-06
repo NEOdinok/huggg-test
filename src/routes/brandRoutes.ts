@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { BrandService } from "../services/brandService";
+import { BrandService } from "@/services/brandService";
 import {
   getPagination,
   parsePageQueryString,
