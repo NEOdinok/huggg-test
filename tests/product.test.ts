@@ -1,8 +1,7 @@
-// tests/productRoutes.test.ts
 import Fastify from "fastify";
 import { describe, beforeEach, afterEach, it, expect } from "@jest/globals";
 
-import { registerProductRoutes } from "../src/routes/productRoutes";
+import { productRoutes } from "../src/routes/productRoutes";
 import { InMemoryRepository } from "../src/repositories/inMemoryRepository";
 import { ProductService } from "../src/services/productService";
 
@@ -53,8 +52,9 @@ describe("GET /products/:productId/stores", () => {
       { ...mockProductStores }
     );
 
-    const productService = new ProductService(repo);
-    registerProductRoutes(fastify, productService);
+    await fastify.register(productRoutes, {
+      service: new ProductService(repo),
+    });
 
     await fastify.ready();
   });

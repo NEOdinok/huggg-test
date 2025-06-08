@@ -1,7 +1,13 @@
+// jest.config.ts
 import type { Config } from "jest";
 
 const config: Config = {
   testEnvironment: "node",
+
+  moduleNameMapper: {
+    "^@/(.*)$": "<rootDir>/src/$1",
+  },
+  moduleFileExtensions: ["ts", "js", "json", "node"],
 
   transform: {
     "^.+\\.(ts|tsx)$": [

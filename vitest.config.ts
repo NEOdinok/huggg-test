@@ -1,12 +1,17 @@
 // vitest.config.ts
 import { defineConfig } from "vitest/config";
+import path from "path";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      // any import that starts with "@/foo" => "<rootDir>/src/foo"
+      "@": path.resolve(__dirname, "src"),
+    },
+  },
   test: {
-    // Look under src/vitest-tests/ instead of vitest-tests/ at the root:
     include: ["vitest-tests/**/*.test.ts"],
-
-    // (You can leave the default excludes alone, or explicitly override them here if needed.)
-    // exclude: ["**/node_modules/**", "**/dist/**", ...],
+    environment: "node",
+    // (you can leave other defaults as-is)
   },
 });
