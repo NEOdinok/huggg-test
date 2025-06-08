@@ -68,7 +68,8 @@ We have only two of **those endpoints** because the task explicitly asked for:
 
 ### GET /brands/:brandId/products
 
-1. Client calls GET /brands/:brandId/products (optionally with ?page=&per_page=).
+1. Client calls GET /brands/:brandId/products (optionally with ?page=&per_page=).  
+   **Typebox validation** handles invalid route params in there
 2. Route handler (src/routes/brandRoutes.ts):
 
 - Extracts brandId from path params.
