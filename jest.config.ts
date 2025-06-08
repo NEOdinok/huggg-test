@@ -1,4 +1,3 @@
-// jest.config.ts
 import type { Config } from "jest";
 
 const config: Config = {
@@ -9,10 +8,11 @@ const config: Config = {
       "ts-jest",
       {
         tsconfig: "tsconfig.json",
-        // move any other ts-jest options here
       },
     ],
   },
+
+  testPathIgnorePatterns: ["/node_modules/", "<rootDir>/vitest-tests/"],
 };
 
 export default config;
