@@ -9,11 +9,10 @@ export class ProductService {
     if (!product) return null;
 
     const storeIds = await this.repo.getStoreIdsByProduct(productId);
-    const stores: Store[] = [];
-    for (const storeId of storeIds) {
-      const store = await this.repo.findStoreById(storeId);
-      if (store) stores.push(store);
-    }
-    return stores;
+
+    const storePromises = storeIds.map((id) => this.repo.findStoreById(id));
+    const storeResults = await Promise.all(storePromises); // might change to Promise.allSettled based on business needs
+
+    return storeResults.filter((store): store is Store => !!store);
   }
 }

@@ -9,14 +9,14 @@ export class BrandService {
 
     if (!brand) return null; // brand not found
 
-    const allIds = [...brand.products, ...brand.consolidated_products];
-    const products: Product[] = [];
+    const ids = new Set([...brand.products, ...brand.consolidated_products]);
 
-    for (const productId of allIds) {
-      const product = await this.repo.findProductById(productId);
-      if (product) products.push(product);
-    }
+    const productPromises = Array.from(ids).map((id) =>
+      this.repo.findProductById(id)
+    );
 
-    return products;
+    const productResults = await Promise.all(productPromises);
+
+    return productResults.filter((product): product is Product => !!product);
   }
 }
