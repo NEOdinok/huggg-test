@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
-import { registerBrandRoutes } from "../src/routes/brandRoutes";
+import { brandRoutes } from "../src/routes/brandRoutes";
 import { InMemoryRepository } from "../src/repositories/inMemoryRepository";
 import { BrandService } from "../src/services/brandService";
 
@@ -65,8 +65,9 @@ describe("GET /brands/:brandId/products", () => {
       { ...mockProductStores }
     );
 
-    const brandService = new BrandService(repo);
-    registerBrandRoutes(fastify, brandService);
+    await fastify.register(brandRoutes, {
+      service: new BrandService(repo),
+    });
 
     await fastify.ready();
   });
@@ -126,20 +127,12 @@ describe("GET /brands/:brandId/products", () => {
     });
   });
 
-  it("treats invalid page/per_page as 1", async () => {
+  it("invalid route params test", async () => {
     const res = await fastify.inject({
       method: "GET",
       url: "/brands/brand-A/products?per_page=-5&page=abc",
     });
 
-    expect(res.statusCode).toBe(200);
-    const body = res.json();
-
-    // Both “page” and “per_page” should clamp to 1
-    expect(body.meta.page).toBe(1);
-    expect(body.meta.itemsPerPage).toBe(1);
-
-    // Must still return an array (at least the first product)
-    expect(Array.isArray(body.data)).toBe(true);
+    expect(res.statusCode).toBe(400);
   });
 });
