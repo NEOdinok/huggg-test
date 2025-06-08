@@ -1,58 +1,57 @@
-import { FastifyInstance } from "fastify";
+import { FastifyPluginAsync } from "fastify";
+import { Static } from "@sinclair/typebox";
 import { BrandService } from "@/services/brandService";
+import { getPagination } from "@/utils";
 import {
-  getPagination,
-  parsePageQueryString,
-  parsePerPageQueryString,
-} from "../utils";
+  BrandProductsParamsSchema,
+  PaginationQuerySchema,
+  BrandProductsResponseSchema,
+  ErrorResponseSchema,
+} from "../schemas";
 
-interface BrandProductsQuery {
-  page?: string;
-  per_page?: string;
-}
+type Params = Static<typeof BrandProductsParamsSchema>;
+type Query = Static<typeof PaginationQuerySchema>;
 
-/**
- *  Hey, give me a brand’s catalogue.
- *  Paginated if it is too long.
- */
-
-export function registerBrandRoutes(
-  fastify: FastifyInstance,
-  brandService: BrandService
-) {
+export const brandRoutes: FastifyPluginAsync<{
+  service: BrandService;
+}> = async (fastify, { service }) => {
   fastify.get<{
-    Params: { brandId: string };
-    Querystring: BrandProductsQuery;
-  }>("/brands/:brandId/products", async (request, reply) => {
-    const { brandId } = request.params;
-
-    const page = parsePageQueryString(request.query.page);
-    const itemsPerPage = parsePerPageQueryString(request.query.per_page);
-
-    // 1) Fetch all products (unpaginated)
-    const allProducts = await brandService.getProductsForBrand(brandId);
-
-    if (allProducts === null) {
-      return reply.status(404).send({ message: "Brand not found." });
-    }
-
-    // 2) Calculate pagination
-    const totalItems = allProducts.length;
-
-    const { pageEnsuredWithinRange, startIndex, endIndex, lastPage } =
-      getPagination(totalItems, page, itemsPerPage);
-
-    const pageItems = allProducts.slice(startIndex, endIndex);
-
-    // 3) Return a structured response with metadata
-    return reply.status(200).send({
-      data: pageItems,
-      meta: {
-        totalItems,
-        itemsPerPage,
-        lastPage,
-        page: pageEnsuredWithinRange,
+    Params: Params;
+    Querystring: Query;
+    Reply: Static<
+      typeof BrandProductsResponseSchema | typeof ErrorResponseSchema
+    >;
+  }>(
+    "/brands/:brandId/products",
+    {
+      schema: {
+        params: BrandProductsParamsSchema,
+        querystring: PaginationQuerySchema,
+        response: { 200: BrandProductsResponseSchema },
       },
-    });
-  });
-}
+    },
+    async (request, reply) => {
+      const { brandId } = request.params;
+      const { page, per_page: itemsPerPage } = request.query;
+
+      const allProducts = await service.getProductsForBrand(brandId);
+      if (allProducts === null)
+        return reply.status(404).send({ message: "Brand not found." });
+
+      const totalItems = allProducts.length;
+
+      const { pageEnsuredWithinRange, startIndex, endIndex, lastPage } =
+        getPagination(totalItems, page, itemsPerPage);
+
+      return reply.send({
+        data: allProducts.slice(startIndex, endIndex),
+        meta: {
+          totalItems,
+          itemsPerPage,
+          lastPage,
+          page: pageEnsuredWithinRange,
+        },
+      });
+    }
+  );
+};

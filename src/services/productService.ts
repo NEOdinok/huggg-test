@@ -1,5 +1,5 @@
 import { InMemoryRepository } from "@/repositories/inMemoryRepository";
-import { Store, Product } from "@/data";
+import { Store } from "@/data";
 
 export class ProductService {
   constructor(private repo: InMemoryRepository) {}

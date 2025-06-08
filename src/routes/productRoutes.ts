@@ -1,55 +1,57 @@
-import { FastifyInstance } from "fastify";
+import { FastifyPluginAsync } from "fastify";
+import { Static } from "@sinclair/typebox";
 import { ProductService } from "@/services/productService";
-
+import { getPagination } from "@/utils";
 import {
-  parsePageQueryString,
-  parsePerPageQueryString,
-  getPagination,
-} from "../utils";
+  ErrorResponseSchema,
+  PaginationQuerySchema,
+  ProductStoresParamsSchema,
+  ProductStoresResponseSchema,
+} from "@/schemas";
 
-/**
- * Hey, tell me where I can redeem a particular product.
- * (Every store that has it)’
- */
+type Params = Static<typeof ProductStoresParamsSchema>;
+type Query = Static<typeof PaginationQuerySchema>;
 
-interface ProductStoresQuery {
-  page?: string;
-  per_page?: string;
-}
-
-export function registerProductRoutes(
-  fastify: FastifyInstance,
-  productService: ProductService
-) {
+export const productRoutes: FastifyPluginAsync<{
+  service: ProductService;
+}> = async (fastify, { service }) => {
   fastify.get<{
-    Params: { productId: string };
-    Querystring: ProductStoresQuery;
-  }>("/products/:productId/stores", async (request, reply) => {
-    const { productId } = request.params;
-
-    const page = parsePageQueryString(request.query.page);
-    const itemsPerPage = parsePerPageQueryString(request.query.per_page);
-
-    const allStores = await productService.getStoresForProduct(productId);
-    if (allStores === null) {
-      return reply.status(404).send({ message: "Product not found." });
-    }
-
-    const totalItems = allStores.length; // total = 45
-
-    const { pageEnsuredWithinRange, startIndex, endIndex, lastPage } =
-      getPagination(totalItems, page, itemsPerPage);
-
-    const pageItems = allStores.slice(startIndex, endIndex);
-
-    return reply.status(200).send({
-      data: pageItems,
-      meta: {
-        totalItems,
-        itemsPerPage,
-        lastPage,
-        page: pageEnsuredWithinRange,
+    Params: Params;
+    Querystring: Query;
+    Reply: Static<
+      typeof ProductStoresResponseSchema | typeof ErrorResponseSchema
+    >;
+  }>(
+    "/products/:productId/stores",
+    {
+      schema: {
+        params: ProductStoresParamsSchema,
+        querystring: PaginationQuerySchema,
+        response: { 200: ProductStoresResponseSchema },
       },
-    });
-  });
-}
+    },
+    async (request, reply) => {
+      const { productId } = request.params;
+      const { page, per_page: itemsPerPage } = request.query;
+
+      const allStores = await service.getStoresForProduct(productId);
+      if (allStores === null) {
+        return reply.status(404).send({ message: "Product not found." });
+      }
+
+      const totalItems = allStores.length;
+      const { pageEnsuredWithinRange, startIndex, endIndex, lastPage } =
+        getPagination(totalItems, page, itemsPerPage);
+
+      return reply.send({
+        data: allStores.slice(startIndex, endIndex),
+        meta: {
+          totalItems,
+          itemsPerPage,
+          lastPage,
+          page: pageEnsuredWithinRange,
+        },
+      });
+    }
+  );
+};
