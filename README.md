@@ -4,6 +4,13 @@ Welcome to the Huggg tech test! Below you’ll find:
 
 ---
 
+## Requirements
+
+- Node.js ≥ 18
+- [pnpm](https://pnpm.io) (exact version: `9.15.9`)
+
+Install pnpm via Corepack (recommended):
+
 ## How to Start the Project
 
 **Install dependencies**
