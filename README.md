@@ -80,7 +80,7 @@ We have only two of **those endpoints** because the task explicitly asked for:
 2. Route handler (src/routes/brandRoutes.ts):
 
 - Extracts brandId from path params.
-- Parses page and per_page via helpers to ensure valid positive integers (clamping invalid or missing values to 1).
+- Parses page and per_page via helpers to ensure valid positive integers (returns error if invalid params).
 - Calls BrandService.getProductsForBrand(brandId).
 
 3. Service (src/services/brandService.ts):
