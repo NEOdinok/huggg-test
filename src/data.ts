@@ -65,16 +65,22 @@ for (const brand of brands) {
   brandMap.set(brand.id, brand);
 }
 
+// 1. prerequisites that we'll be working with
 const productStores: Record<string, string[]> = {};
 for (const product of products) {
   productStores[product.id] = [];
 }
 
+// 2. go brand by brand and for each brand:
 for (const brand of brands) {
+  // 3. Take all products this brand sells (own and consolidated) and for each product:
   const allProductIds = [...brand.products, ...brand.consolidated_products];
   for (const pid of allProductIds) {
     if (!(pid in productStores)) continue;
 
+    // 4. Based on the fact that brand sells each one of those products
+    // attach all brand's stores to this product.
+    // We need loop to avoid duplicates
     for (const sid of brand.stores) {
       if (!productStores[pid].includes(sid)) {
         productStores[pid].push(sid);
