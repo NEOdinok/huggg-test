@@ -1,4 +1,4 @@
-import { Brand, Product } from "@/data";
+import { Product } from "@/data";
 import { InMemoryRepository } from "@/repositories/inMemoryRepository";
 
 export class BrandService {
